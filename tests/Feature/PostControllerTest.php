@@ -5,6 +5,7 @@ use App\Models\User;
 use App\Models\Category;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 uses(RefreshDatabase::class);
 
@@ -14,17 +15,22 @@ beforeEach(function () {
 });
 
 it('can retrieve all posts', function () {
-    Post::factory(10)->create();
+    Post::factory(10)->create()->each(function ($post) {
+        if ($post->id % 2 === 0) {
+            $post->addMedia(\Illuminate\Http\UploadedFile::fake()->image('test.jpg'))->toMediaCollection();
+        }
+        $post->categories()->attach(Category::factory()->create());
+    });
 
     $response = $this->getJson('/api/posts');
-
-    // dd($response);
 
     $response->assertStatus(200)
              ->assertJsonStructure([
                 'success',
                 'data' => [
-                    '*' => ['id', 'title', 'content', 'user_id', 'created_at', 'updated_at'],
+                    '*' => [
+                        'id', 'title', 'content', 'created_at', 'updated_at', 'author' => ['id', 'name'], 'categories', 'comments_count', 'feature_image'
+                    ],
                 ],
                 'links',
                 'meta'
@@ -33,16 +39,33 @@ it('can retrieve all posts', function () {
 
 it('can create a post', function () {
     $category = Category::factory()->create();
-    $data = [
+    
+    // Case 1: Without feature image
+    $dataWithoutImage = [
         'title' => 'New Post Title',
         'content' => 'Post content',
         'category_ids' => [$category->id],
     ];
 
-    $response = $this->postJson('/api/posts', $data);
+    $responseWithoutImage = $this->postJson('/api/posts', $dataWithoutImage);
 
-    $response->assertStatus(201)
-             ->assertJsonFragment(['title' => 'New Post Title']);
+    $responseWithoutImage->assertStatus(201)
+                         ->assertJsonFragment(['title' => 'New Post Title']);
+
+    // Case 2: With feature image
+    $dataWithImage = [
+        'title' => 'New Post Title with Image',
+        'content' => 'Post content with image',
+        'category_ids' => [$category->id],
+        'feature_image' => \Illuminate\Http\UploadedFile::fake()->image('test.jpg'),
+    ];
+
+    $responseWithImage = $this->postJson('/api/posts', $dataWithImage);
+
+    $responseWithImage->assertStatus(201)
+                      ->assertJsonFragment(['title' => 'New Post Title with Image']);
+
+    $responseWithImage->assertJsonStructure(['feature_image']);
 });
 
 it('can show a post', function () {
@@ -72,3 +95,20 @@ it('can delete a post', function () {
              ->assertJson(['success' => true, 'message' => 'Post deleted successfully.']);
 });
 
+it('can create a post with feature image', function () {
+    $category = Category::factory()->create();
+    $data = [
+        'title' => 'New Post Title',
+        'content' => 'Post content',
+        'category_ids' => [$category->id],
+        'feature_image' => \Illuminate\Http\UploadedFile::fake()->image('test.jpg'),
+    ];
+
+    $response = $this->postJson('/api/posts', $data);
+
+    $response->assertStatus(201)
+             ->assertJsonFragment(['title' => 'New Post Title']);
+
+
+    $this->assertFileExists(storage_path('app/public/' . $response->json('data.feature_image_url')));
+});

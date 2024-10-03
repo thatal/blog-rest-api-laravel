@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\MediaController;
 
 
 Route::post('register', [AuthController::class, 'register']);
@@ -39,5 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('posts/{postId}/comments/{commentId}', [CommentController::class, 'show']);
     Route::put('posts/{postId}/comments/{commentId}', [CommentController::class, 'update']);
     Route::delete('posts/{postId}/comments/{commentId}', [CommentController::class, 'destroy']);
+
+    // Media Routes
+    Route::post('/media/upload', [MediaController::class, 'upload']);
+    Route::delete('/media', [MediaController::class, 'delete']);
 });
 

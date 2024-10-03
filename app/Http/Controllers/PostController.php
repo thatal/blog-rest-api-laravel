@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Post;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::with('user', 'categories')
+        $posts = Post::with('user', 'categories', 'media')
         ->when(request("category"), function($query) {
             return $query->whereHas('categories', function($query) {
                 $query->whereRaw('LOWER(name) = ?', [strtolower(request('category'))]);
@@ -23,7 +24,7 @@ class PostController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $posts->items(), // Return the items in the paginated collection
+            'data' => \App\Http\Resources\PostResource::collection($posts->items()), // Use PostResource for the items
             'links' => [
                 'first' => $posts->url(1),
                 'last' => $posts->url($posts->lastPage()),
@@ -45,17 +46,22 @@ class PostController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'required',
             'categories' => 'array',
+            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
 
         $post = auth()->user()->posts()->create($validated);
+        if ($request->hasFile('feature_image')) {
+            $post->addMediaFromRequest('feature_image')->toMediaCollection('feature_images');
+        }
         $post->categories()->sync($request->categories);
+        $post->load('user', 'categories', 'media');
 
-        return response()->json($post, 201);
+        return response()->json(new \App\Http\Resources\PostResource($post), 201);
     }
 
     public function show(Post $post)
     {
-        return response()->json($post->load(['user', 'categories', 'comments']));
+        return response()->json(new \App\Http\Resources\PostResource($post->load(['user', 'categories', 'comments'])));
     }
 
     public function update(Request $request, Post $post)
@@ -65,7 +71,13 @@ class PostController extends Controller
         $validated = $request->validate([
             'title' => 'string|max:255',
             'content' => 'string',
+            'categories' => 'array',
+            'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
+
+        if ($request->hasFile('feature_image')) {
+            $post->addMediaFromRequest('feature_image')->toMediaCollection('feature_images');
+        }
 
         $post->update($validated);
         return response()->json($post);

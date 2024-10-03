@@ -4,6 +4,7 @@ use App\Models\Category;
 use App\Models\User;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 
@@ -19,16 +20,14 @@ it('can retrieve all categories', function () {
     $response = $this->getJson('/api/categories');
 
     $response->assertStatus(200)
-             ->assertJsonStructure([
-                 'success',
-                 'data' => [
-                     'data' => [
-                         '*' => ['id', 'name', 'description', 'posts_count', 'created_at', 'updated_at']
-                     ],
-                     'links',
-                     'meta'
-                 ]
-             ]);
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => ['id', 'name', 'description', 'posts_count', 'created_at', 'updated_at', 'category_image']
+                ],
+                'links',
+                'meta'
+            ]);
 });
 
 it('can create a category', function () {
@@ -38,6 +37,22 @@ it('can create a category', function () {
 
     $response->assertStatus(201)
              ->assertJsonFragment(['name' => 'Tech']);
+});
+
+it('can create a category with image', function () {
+    $data = [
+        'name' => 'Tech', 
+        'description' => 'Technology Category', 
+        'category_image' => UploadedFile::fake()->image('tech.jpg')
+    ];
+
+    $responseWithImage = $this->postJson('/api/categories', $data);
+
+    $responseWithImage->assertStatus(201)
+             ->assertJsonFragment(['name' => 'Tech']);
+    
+    $responseWithImage->assertJsonStructure(["data" => ['category_image']]);
+             
 });
 
 it('can show a category', function () {
