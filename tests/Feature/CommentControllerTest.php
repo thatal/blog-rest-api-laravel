@@ -23,7 +23,7 @@ it('can retrieve all comments for a post', function () {
              ->assertJsonStructure([
                     'success',
                     'data' => [
-                        '*' => ['id', 'content', 'user_id', 'post_id', 'created_at', 'updated_at'],
+                        '*' => ['id', 'content', 'created_at', 'user' => [ "id", "name", "email"]],
                     ],
                     'links',
                     'meta'

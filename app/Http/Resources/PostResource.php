@@ -28,7 +28,7 @@ class PostResource extends JsonResource
                     'name' => $category->name,
                 ];
             }),
-            'comments_count' => $this->comments()->count(),
+            'comments_count' => $this->comments_count,
             'feature_image' => $this->getFirstMediaUrl("feature_images"),
         ];
     }

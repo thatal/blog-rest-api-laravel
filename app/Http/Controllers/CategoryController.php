@@ -50,7 +50,7 @@ class CategoryController extends Controller
     public function show($id)
     {
         $category = Category::with('posts')->findOrFail($id);
-        return response()->json(['success' => true, 'data' => $category]);
+        return response()->json(['success' => true, 'data' => new CategoryResource($category)]);
     }
 
     public function update(Request $request, $id)

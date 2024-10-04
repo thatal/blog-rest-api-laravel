@@ -19,6 +19,7 @@ class PostController extends Controller
         ->when(request("search"), function($query) {
             return $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower(request('search')) . '%']);
         })
+        ->withCount('comments')
         ->latest()
         ->paginate(10); // Eager load user and categories
 
@@ -54,14 +55,15 @@ class PostController extends Controller
             $post->addMediaFromRequest('feature_image')->toMediaCollection('feature_images');
         }
         $post->categories()->sync($request->categories);
-        $post->load('user', 'categories', 'media');
+        $post->load('user', 'categories', 'media')->loadCount('comments');
 
         return response()->json(new \App\Http\Resources\PostResource($post), 201);
     }
 
     public function show(Post $post)
     {
-        return response()->json(new \App\Http\Resources\PostResource($post->load(['user', 'categories', 'comments'])));
+        $post->load(['user', 'categories', 'comments'])->loadCount('comments');
+        return response()->json(new \App\Http\Resources\PostResource($post));
     }
 
     public function update(Request $request, Post $post)
@@ -80,7 +82,9 @@ class PostController extends Controller
         }
 
         $post->update($validated);
-        return response()->json($post);
+        $post->categories()->sync($request->categories);
+        $post->load('user', 'categories', 'media')->loadCount('comments');
+        return response()->json(new \App\Http\Resources\PostResource($post));
     }
 
     public function destroy(Post $post)

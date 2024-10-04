@@ -7,6 +7,7 @@ use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Notifications\NewCommentNotification;
+use App\Http\Resources\CommentResource;
 
 class CommentController extends Controller
 {
@@ -18,7 +19,7 @@ class CommentController extends Controller
 
         return response()->json([
             'success' => true, 
-            'data' => $comments->items(),
+            'data' => CommentResource::collection($comments->items()),
             'links' => [
                 'first' => $comments->url(1),
                 'last' => $comments->url($comments->lastPage()),
@@ -51,7 +52,7 @@ class CommentController extends Controller
         $post->comments()->save($comment);
         $comment->post->user->notify(new NewCommentNotification($comment));
 
-        return response()->json(['success' => true, 'data' => $comment], 201);
+        return response()->json(['success' => true, 'data' => new CommentResource($comment)], 201);
     }
 
     public function show($postId, $commentId)
@@ -74,8 +75,9 @@ class CommentController extends Controller
         }
 
         $comment->update(['content' => $request->content]);
+        $comment->load("user");
 
-        return response()->json(['success' => true, 'data' => $comment]);
+        return response()->json(['success' => true, 'data' => new CommentResource($comment)]);
     }
 
     public function destroy($postId, $commentId)
@@ -88,6 +90,7 @@ class CommentController extends Controller
         }
 
         $comment->delete();
+        $comment->replies()->delete();
 
         return response()->json(['success' => true, 'message' => 'Comment deleted successfully.']);
     }
