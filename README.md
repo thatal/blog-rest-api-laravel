@@ -1,66 +1,116 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Blog REST API Laravel
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a Laravel based REST API for a blog application.
+## Features
 
-## About Laravel
+- **User Authentication:** Secure login and registration using **Sanctum**.
+- **Role Permission:** Manage user roles and permissions.
+- **CRUD Operations:** Create, read, update, and delete blog posts, categories and comments.
+- **Database Migrations:** Easily set up and manage the database schema.
+- **API Documentation:** Comprehensive documentation *coming soon*.
+- **Testing:** Pest tests for ensuring code quality.
+- **Error Handling:** Graceful error handling and validation.
+- **Pagination:** Efficiently paginate large sets of data.
+- **CORS Support:** Cross-Origin Resource Sharing enabled.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Prerequisites
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- PHP >= 8.2
+- Composer
+- Node.js & npm
+- MySQL or any other supported database
+- Git
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Installation
 
-## Learning Laravel
+1. **Clone the repository:**
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+    ```sh
+    git clone https://github.com/thatal/blog-api-laravel.git
+    cd blog-api-laravel
+    ```
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+2. **Install dependencies:**
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+    ```sh
+    composer install
+    npm install
+    ```
 
-## Laravel Sponsors
+3. **Copy the example environment file and configure the environment variables:**
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+    ```sh
+    cp .env.example .env
+    ```
 
-### Premium Partners
+    Update the `.env` file with your database and other configurations.
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+4. **Generate the application key:**
+
+    ```sh
+    php artisan key:generate
+    ```
+
+5. **Run the database migrations:**
+
+    ```sh
+    php artisan migrate
+    ```
+
+6. **Seed the database (optional):**
+
+    ```sh
+    php artisan db:seed
+    ```
+
+7. **Run the development server:**
+
+    ```sh
+    php artisan serve
+    ```
+## Running Tests
+
+To run the tests, use the following command:
+
+```sh
+php artisan test
+```
+## Milestone
+
+- **Version 1.0:**
+    - Initial release with basic blog functionalities REST api.
+    - User authentication and authorization.
+    - CRUD operations for posts, categories and comments.
+    - Basic testing setup.
+
+- **Version 1.1:**
+    - [ ] Adding slug support for SEO-friendly URLs. *(coming soon)*
+    - [ ] Adding tags and media support. *(coming soon)*
+    - [ ] API documentation using Swagger or Postman. *(coming soon)*
+    - [ ] Improved error handling and validation. *(coming soon)*
+    - [ ] Additional tests for improved code coverage. *(coming soon)*
+    - [ ] Improved pagination, searching & sorting. *(coming soon)*
+
+- **Version 1.2:**
+    - [ ] Implementing caching for improved performance. *(pending)*
+    - [ ] Implementing rate limiting for API requests. *(pending)*
+    - [ ] Implementing email notifications for new posts. *(pending)*
+    - [ ] Implementing a user profile page. *(pending)*
+    - [ ] Adding support for multiple languages. *(pending)*
+    - [ ] Implementing a search feature for posts. *(pending)*
+    - [ ] Adding a feature to like and share posts. *(pending)*
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Contributions are welcome! Here's how you can help:
 
-## Code of Conduct
+- **Reporting issues:** If you find any bugs or issues, please open a GitHub issue.
+- **Suggesting features:** If you have any suggestions or would like to request a feature, please open a GitHub issue.
+- **Opening pull requests:** If you'd like to contribute directly to the codebase, please fork this repository and submit a pull request.
+- **Ensuring tests pass:** Make sure all existing test cases pass before submitting a pull request.
+- **Adding tests:** Include test cases for any new features or changes you introduce.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
