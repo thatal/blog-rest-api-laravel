@@ -45,6 +45,7 @@ class PostController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:posts,slug',
             'content' => 'required',
             'categories' => 'array',
             'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
@@ -72,6 +73,7 @@ class PostController extends Controller
 
         $validated = $request->validate([
             'title' => 'string|max:255',
+            'slug' => 'string|max:255|unique:posts,slug,' . $post->id,
             'content' => 'string',
             'categories' => 'array',
             'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',

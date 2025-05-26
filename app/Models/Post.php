@@ -12,7 +12,7 @@ class Post extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
-    protected $fillable = ['title', 'content', 'user_id'];
+    protected $fillable = ['title', 'slug', 'content', 'user_id'];
 
     public function user()
     {
@@ -38,5 +38,11 @@ class Post extends Model implements HasMedia
     public function getFeatureImageUrlAttribute()
     {
         return $this->getFirstMediaUrl('feature_images');
+    }
+
+    // Override the route key name to use 'slug' instead of 'id'
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 }

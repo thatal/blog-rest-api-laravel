@@ -29,7 +29,7 @@ it('can retrieve all posts', function () {
                 'success',
                 'data' => [
                     '*' => [
-                        'id', 'title', 'content', 'created_at', 'updated_at', 'author' => ['id', 'name'], 'categories', 'comments_count', 'feature_image'
+                        'id','slug', 'title', 'content', 'created_at', 'updated_at', 'author' => ['id', 'name'], 'categories', 'comments_count', 'feature_image'
                     ],
                 ],
                 'links',
@@ -43,6 +43,7 @@ it('can create a post', function () {
     // Case 1: Without feature image
     $dataWithoutImage = [
         'title' => 'New Post Title',
+        'slug' => 'new-post-title',
         'content' => 'Post content',
         'category_ids' => [$category->id],
     ];
@@ -55,6 +56,7 @@ it('can create a post', function () {
     // Case 2: With feature image
     $dataWithImage = [
         'title' => 'New Post Title with Image',
+        'slug' => 'new-post-title-with-image',
         'content' => 'Post content with image',
         'category_ids' => [$category->id],
         'feature_image' => \Illuminate\Http\UploadedFile::fake()->image('test.jpg'),
@@ -71,26 +73,24 @@ it('can create a post', function () {
 it('can show a post', function () {
     $post = Post::factory()->create();
 
-    $response = $this->getJson("/api/posts/{$post->id}");
+    $response = $this->getJson("/api/posts/{$post->slug}");
 
     $response->assertStatus(200)
-             ->assertJsonFragment(['id' => $post->id, 'title' => $post->title]);
+             ->assertJsonFragment(['id' => $post->id, 'title' => $post->title, 'slug' => $post->slug]);
 });
 
 it('can update a post', function () {
     $post = Post::factory()->create();
-    $data = ['title' => 'Updated Post Title', 'content' => 'Updated content'];
-
-    $response = $this->putJson("/api/posts/{$post->id}", $data);
-
+    $data = ['title' => 'Updated Post Title', 'content' => 'Updated content', 'slug' => 'updated-post-title'];
+    $response = $this->putJson("/api/posts/{$post->slug}", $data);
     $response->assertStatus(200)
-             ->assertJsonFragment(['title' => 'Updated Post Title']);
+             ->assertJsonFragment(['title' => 'Updated Post Title', 'slug' => 'updated-post-title']);
 });
 
 it('can delete a post', function () {
     $post = Post::factory()->create();
 
-    $response = $this->deleteJson("/api/posts/{$post->id}");
+    $response = $this->deleteJson("/api/posts/{$post->slug}");
     $response->assertStatus(200)
              ->assertJson(['success' => true, 'message' => 'Post deleted successfully.']);
 });
@@ -99,6 +99,7 @@ it('can create a post with feature image', function () {
     $category = Category::factory()->create();
     $data = [
         'title' => 'New Post Title',
+        'slug' => 'new-post-title',
         'content' => 'Post content',
         'category_ids' => [$category->id],
         'feature_image' => \Illuminate\Http\UploadedFile::fake()->image('test.jpg'),

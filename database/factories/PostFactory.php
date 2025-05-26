@@ -15,6 +15,7 @@ class PostFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence(), // Generates a random title
+            'slug' => $this->faker->unique()->slug(), // Generates a unique slug
             'content' => $this->faker->paragraph(), // Generates random content
             'user_id' => User::factory(), // Creates a user for the post
             'created_at' => now(),
