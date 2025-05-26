@@ -19,6 +19,7 @@ class PostResource extends JsonResource
             'content' => $this->content,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
+            'tags'      => $this->whenLoaded('tags') ? $this->whenLoaded('tags')->pluck('name') : [],
             'author' => [
                 'id' => $this->user->id,
                 'name' => $this->user->name,

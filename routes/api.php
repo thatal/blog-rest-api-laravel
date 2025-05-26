@@ -9,6 +9,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\TagController;
 
 
 Route::post('register', [AuthController::class, 'register']);
@@ -33,6 +34,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('posts', PostController::class);
     // Category Routes
     Route::apiResource('categories', CategoryController::class);
+    // Tag Routes
+    Route::apiResource('tags', TagController::class);
 
     // Comment Routes
     Route::get('posts/{postId}/comments', [CommentController::class, 'index']);

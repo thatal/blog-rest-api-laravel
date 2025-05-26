@@ -3,6 +3,7 @@
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Category;
+use App\Models\Tag;
 use Laravel\Sanctum\Sanctum;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -112,4 +113,74 @@ it('can create a post with feature image', function () {
 
 
     $this->assertFileExists(storage_path('app/public/' . $response->json('data.feature_image_url')));
+});
+it('can create a post with tags', function () {
+    $category = Category::factory()->create();
+    $tags = ['Laravel', 'PHP'];
+    $data = [
+        'title' => 'Post with Tags',
+        'slug' => 'post-with-tags',
+        'content' => 'Post content with tags',
+        'categories' => [$category->id],
+        'tags' => $tags,
+    ];
+
+    $response = $this->postJson('/api/posts', $data);
+    $response->assertStatus(201)
+             ->assertJsonFragment(['title' => 'Post with Tags']);
+    // Verify each tag exists in the response.
+    $responseTags = $response->json('tags');
+
+    foreach ($tags as $tag) {
+        $this->assertTrue(
+            collect($responseTags)->contains($tag),
+            "Tag '{$tag}' not found in response."
+        );
+    }
+});
+
+it('can update a post with tags', function () {
+    $post = Post::factory()->create();
+    $category = Category::factory()->create();
+    $tags = ['Updated Tag 1', 'Updated Tag 2'];
+    $data = [
+        'title' => 'Updated Post Title',
+        'slug' => 'updated-post-title',
+        'content' => 'Updated content with tags',
+        'categories' => [$category->id],
+        'tags' => $tags,
+    ];
+
+    $response = $this->putJson("/api/posts/{$post->slug}", $data);
+    $response->assertStatus(200)
+             ->assertJsonFragment(['title' => 'Updated Post Title']);
+
+    // Verify each tag exists in the response.
+    $responseTags = $response->json('tags');
+
+    foreach ($tags as $tag) {
+        $this->assertTrue(
+            collect($responseTags)->contains($tag),
+            "Tag '{$tag}' not found in response."
+        );
+    }
+});
+
+it('can filter posts with tags', function () {
+    $category = Category::factory()->create();
+    $tagToFilter = 'Laravel';
+    $tag = \App\Models\Tag::factory()->create(['name' => $tagToFilter]);
+
+    $postWithTag = Post::factory()->create();
+    $postWithTag->tags()->sync([$tag->id]);
+
+    $postWithoutTag = Post::factory()->create([
+        'title' => 'Post without Laravel tag',
+        'content' => 'This post does not have the Laravel tag.',
+    ]);
+
+    $response = $this->getJson("/api/posts?tags={$tagToFilter}");
+    $response->assertStatus(200)
+             ->assertJsonFragment(['id' => $postWithTag->id, 'title' => $postWithTag->title]);
+    $response->assertJsonMissing(['title' => $postWithoutTag->title]);
 });

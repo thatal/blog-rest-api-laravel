@@ -19,6 +19,13 @@ class PostController extends Controller
         ->when(request("search"), function($query) {
             return $query->whereRaw('LOWER(title) LIKE ?', ['%' . strtolower(request('search')) . '%']);
         })
+        ->when(request("tags"), function($query) {
+            $tags = explode(',', request('tags'));
+            return $query->whereHas('tags', function($query) use ($tags) {
+                $query->whereIn('name', array_map('trim', $tags));
+            });
+        })
+        ->with('tags') // Eager load tags
         ->withCount('comments')
         ->latest()
         ->paginate(10); // Eager load user and categories
@@ -49,21 +56,39 @@ class PostController extends Controller
             'content' => 'required',
             'categories' => 'array',
             'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'tags' => 'array',
+            'tags.*' => 'string|max:255',
         ]);
+        \DB::beginTransaction();
+        try {
+            $tags = $request->input('tags', []);
+            $tagIds = [];
+            foreach ($tags as $tagName) {
+                $tag = \App\Models\Tag::firstOrCreate(['name' => $tagName]);
+                $tagIds[] = $tag->id;
+            }
+            $post = auth()->user()->posts()->create($validated);
 
-        $post = auth()->user()->posts()->create($validated);
-        if ($request->hasFile('feature_image')) {
-            $post->addMediaFromRequest('feature_image')->toMediaCollection('feature_images');
+            if ($request->hasFile('feature_image')) {
+                $post->addMediaFromRequest('feature_image')->toMediaCollection('feature_images');
+            }
+
+            $post->categories()->sync($request->categories);
+            $post->tags()->sync($tagIds);
+            $post->load('user', 'categories', 'media', 'tags')->loadCount('comments');
+            // Sync tags
+            \DB::commit();
+            return response()->json(new \App\Http\Resources\PostResource($post), 201);
+        } catch (\Exception $e) {
+            \DB::rollBack();
+
+            return response()->json(['error' => 'Post creation failed.'], 500);
         }
-        $post->categories()->sync($request->categories);
-        $post->load('user', 'categories', 'media')->loadCount('comments');
-
-        return response()->json(new \App\Http\Resources\PostResource($post), 201);
     }
 
     public function show(Post $post)
     {
-        $post->load(['user', 'categories', 'comments'])->loadCount('comments');
+        $post->load(['user', 'categories', 'comments', 'tags'])->loadCount('comments');
         return response()->json(new \App\Http\Resources\PostResource($post));
     }
 
@@ -77,15 +102,25 @@ class PostController extends Controller
             'content' => 'string',
             'categories' => 'array',
             'feature_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'tags' => 'array',
+            'tags.*' => 'string|max:255',
         ]);
 
         if ($request->hasFile('feature_image')) {
             $post->addMediaFromRequest('feature_image')->toMediaCollection('feature_images');
         }
-
+        
         $post->update($validated);
+        if ($request->has('tags')) {
+            $tagIds = [];
+            foreach ($request->input('tags') as $tagName) {
+                $tag = \App\Models\Tag::firstOrCreate(['name' => $tagName]);
+                $tagIds[] = $tag->id;
+            }
+            $post->tags()->sync($tagIds);
+        }
         $post->categories()->sync($request->categories);
-        $post->load('user', 'categories', 'media')->loadCount('comments');
+        $post->load('user', 'categories', 'media', 'tags')->loadCount('comments');
         return response()->json(new \App\Http\Resources\PostResource($post));
     }
 
