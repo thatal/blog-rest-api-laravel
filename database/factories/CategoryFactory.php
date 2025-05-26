@@ -13,6 +13,7 @@ class CategoryFactory extends Factory
     {
         return [
             'name' => $this->faker->unique()->word(), // Generates a unique category name
+            'slug' => $this->faker->unique()->slug(), // Generates a unique slug for the category
             'created_at' => now(),
             'updated_at' => now(),
         ];

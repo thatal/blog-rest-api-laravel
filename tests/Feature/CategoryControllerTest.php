@@ -23,7 +23,7 @@ it('can retrieve all categories', function () {
             ->assertJsonStructure([
                 'success',
                 'data' => [
-                    '*' => ['id', 'name', 'description', 'posts_count', 'created_at', 'updated_at', 'category_image']
+                    '*' => ['id', 'name', 'slug', 'description', 'posts_count', 'created_at', 'updated_at', 'category_image']
                 ],
                 'links',
                 'meta'
@@ -31,17 +31,18 @@ it('can retrieve all categories', function () {
 });
 
 it('can create a category', function () {
-    $data = ['name' => 'Tech', 'description' => 'Technology Category'];
+    $data = ['name' => 'Tech', 'slug' => 'tech', 'description' => 'Technology Category'];
 
     $response = $this->postJson('/api/categories', $data);
 
     $response->assertStatus(201)
-             ->assertJsonFragment(['name' => 'Tech']);
+             ->assertJsonFragment(['name' => 'Tech', 'slug' => 'tech']);
 });
 
 it('can create a category with image', function () {
     $data = [
         'name' => 'Tech', 
+        'slug' => 'tech',
         'description' => 'Technology Category', 
         'category_image' => UploadedFile::fake()->image('tech.jpg')
     ];
@@ -49,7 +50,7 @@ it('can create a category with image', function () {
     $responseWithImage = $this->postJson('/api/categories', $data);
 
     $responseWithImage->assertStatus(201)
-             ->assertJsonFragment(['name' => 'Tech']);
+             ->assertJsonFragment(['name' => 'Tech', 'slug' => 'tech']);
     
     $responseWithImage->assertJsonStructure(["data" => ['category_image']]);
              
@@ -57,27 +58,26 @@ it('can create a category with image', function () {
 
 it('can show a category', function () {
     $category = Category::factory()->create();
-
-    $response = $this->getJson("/api/categories/{$category->id}");
+    $response = $this->getJson("/api/categories/{$category->slug}");
 
     $response->assertStatus(200)
-             ->assertJsonFragment(['id' => $category->id, 'name' => $category->name]);
+             ->assertJsonFragment(['id' => $category->id, 'name' => $category->name, 'slug' => $category->slug]);
 });
 
 it('can update a category', function () {
     $category = Category::factory()->create();
-    $data = ['name' => 'Updated Name', 'description' => 'Updated Description'];
+    $data = ['name' => 'Updated Name', 'description' => 'Updated Description', 'slug' => 'updated-name'];
 
-    $response = $this->putJson("/api/categories/{$category->id}", $data);
+    $response = $this->putJson("/api/categories/{$category->slug}", $data);
 
     $response->assertStatus(200)
-             ->assertJsonFragment(['name' => 'Updated Name']);
+             ->assertJsonFragment(['name' => 'Updated Name', 'slug' => 'updated-name', 'description' => 'Updated Description']);
 });
 
 it('can delete a category', function () {
     $category = Category::factory()->create();
 
-    $response = $this->deleteJson("/api/categories/{$category->id}");
+    $response = $this->deleteJson("/api/categories/{$category->slug}");
 
     $response->assertStatus(200)
              ->assertJson(['success' => true, 'message' => 'Category deleted successfully.']);

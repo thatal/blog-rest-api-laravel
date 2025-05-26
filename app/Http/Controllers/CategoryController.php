@@ -35,6 +35,7 @@ class CategoryController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|unique:categories',
+            'slug' => 'required|string|unique:categories,slug',
             'description' => 'nullable|string',
             'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -49,16 +50,22 @@ class CategoryController extends Controller
 
     public function show($id)
     {
-        $category = Category::with('posts')->findOrFail($id);
+        $category = Category::with('posts')->where("slug", $id)->first();
+        if (!$category) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Category not found with slug: $id");
+        }
         return response()->json(['success' => true, 'data' => new CategoryResource($category)]);
     }
 
     public function update(Request $request, $id)
     {
-        $category = Category::findOrFail($id);
-
+        $category = Category::where("slug", $id)->first();
+        if (!$category) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Category not found with slug: $id");
+        }
         $request->validate([
             'name' => 'required|string|unique:categories,name,' . $category->id,
+            'slug' => 'required|string|unique:categories,slug,' . $category->id,
             'description' => 'nullable|string',
             'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
@@ -73,7 +80,10 @@ class CategoryController extends Controller
 
     public function destroy($id)
     {
-        $category = Category::findOrFail($id);
+        $category = Category::where("slug", $id)->first();
+        if (!$category) {
+            throw new \Illuminate\Database\Eloquent\ModelNotFoundException("Category not found with slug: $id");
+        }
         $category->delete();
 
         return response()->json(['success' => true, 'message' => 'Category deleted successfully.']);

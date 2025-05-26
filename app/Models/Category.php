@@ -12,7 +12,7 @@ class Category extends Model implements HasMedia
 {
     use HasFactory, SoftDeletes, InteractsWithMedia;
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'slug', 'description'];
 
     public function posts()
     {
@@ -23,5 +23,11 @@ class Category extends Model implements HasMedia
     {
         $this->addMediaCollection('category_images')
             ->singleFile();
+    }
+
+    // Override the route key name to use 'slug' instead of 'id'
+    public function getRouteKeyName()
+    {
+        return 'slug';
     }
 }
